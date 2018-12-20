@@ -1,19 +1,16 @@
 {
-  "name": "qb-api",
+  "name": "vision-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "vision-api.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nondracek/qb-api.git"
+    "start": "node vision-api.js",
+    "test": "test"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/nondracek/qb-api/issues"
-  },
-  "homepage": "https://github.com/nondracek/qb-api#readme"
+  "dependencies": {
+    "cool-ascii-faces": "^1.3.4",
+    "express": "^4.16.4"
+  }
 }
