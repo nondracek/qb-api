@@ -1,18 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
+const passport = require('passport');
+const apiRoutes = require('./routes');
 
-const index = require('./routes/index');
-const users = require('./routes/users');
+// get passport strategy
+require('./passport');
 
 // should ideally use a config or dotenv file
-//const ADMIN_USER = process.env.ADMIN_USER;
-//const ADMIN_PASS = process.env.ADMIN_PASS;
-//const MLAB_HOST = process.env.MLAB_HOST;
-//const MLAB_PORT = process.env.MLAB_PORT;
-//const DB_URL = `mongodb://${ADMIN_USER}:${ADMIN_PASS}@${MLAB_HOST}:${MLAB_PORT}/vision`;
 const DB_USER = process.env.DB_USER;
 const DB_PW = process.env.DB_PW;
 const DB_HOST = process.env.DB_HOST;
@@ -29,25 +24,24 @@ db.on('error', console.log)
   .on('disconnected', connect)
   .once('open', listen);
 
-// use sessions for tracking logins
-app.use(session({
-  secret: 'pear or plum',
-  resave: true,
-  saveUninitialized: false,
-  store: new MongoStore({
-    mongooseConnection: db
-  })
-}));
-
 // parse incoming requests
 app.use(bodyParser.json());
 
+app.use(passport.initialize());
+
 // routes
-app.use('/', index);
-app.use('/users', users);
+app.use('/', apiRoutes);
+
+// catch unauthorized errors
+app.use((err, req, res, next) => {
+  if (err.name === "UnauthorizedError") {
+    res.status(401);
+    res.json({ "message": err.name + ": " + err.message });
+  }
+});
 
 function listen() {
-  app.listen(PORT, function() {
+  app.listen(PORT, () => {
     console.log(`Node app is running on port ${PORT}`);
   });
 }
@@ -60,3 +54,31 @@ function connect() {
   mongoose.connect(DB_URL, options);
   return mongoose.connection;
 }
+
+const gracefulShutdown = (msg, callback) => {
+  db.close(function() {
+    console.log('Mongoose disconnected through ' + msg);
+    callback();
+  });
+};
+
+// For nodemon restarts
+process.once('SIGUSR2', () => {
+  gracefulShutdown('nodemon restart', () => {
+    process.kill(process.pid, 'SIGUSR2');
+  });
+});
+
+// For app termination
+process.on('SIGINT', () => {
+  gracefulShutdown('app termination', () => {
+    process.exit(0);
+  });
+});
+
+// For Heroku app termination
+process.on('SIGTERM', () => {
+  gracefulShutdown('Heroku app termination', () => {
+    process.exit(0);
+  });
+});

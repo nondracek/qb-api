@@ -1,42 +1,43 @@
 const express = require('express');
+const passport = require('passport');
 const User = require('../models/user');
 
 const router = express.Router();
 
-router.get('/logout', (req, res, next) => {
-  if (req.session) {
-    req.session.destroy((err) => {
-      if (err) {
-        next(err);
-      } else {
-        res.redirect('/');
-      }
-    });
-  }
-});
+const sendJSONRes = (res, status, content) => {
+  res.status(status);
+  res.json(content);
+};
 
-router.post('/login', (req, res, next) => {
-  const { username, password } = req.body;
-  User.authenticate(username, password, (err, user) => {
-    if (err || !user) {
-      let e = new Error("Wrong email or password");
-      e.status = 401;
-      next(e);
-    } else {
-      req.session.userId = user._id;
-      res.redirect('/');
-    }
-  });
-});
-
-router.post('/signup', (req, res, next) => {
-  User.create(req.body, (err, user) => {
+router.post('/login', (req, res) => {
+  passport.authenticate('local', (err, user, info) => {
     if (err) {
-      next(err);
-    } else {
-      req.session.userId = user._id;
-      res.redirect('/');
+      sendJSONRes(res, 404, err);
+      return;
     }
+    if (user) {
+      const token = user.generateJwt();
+      sendJSONRes(res, 200, { "token": token });
+    } else {
+      sendJSONRes(res, 401, info);
+    }
+  })(req, res);
+});
+
+router.post('/signup', (req, res) => {
+  const user = new User();
+  user.username = req.body.username;
+  user.name = req.body.name;
+  user.setPassword(req.body.password);
+  user.save(err => {
+    if (err) {
+      sendJSONRes(res, 400, {
+        "message": "could not create user"
+      });
+      return;
+    }
+    const token = user.generateJwt();
+    sendJSONRes(res, 200, { "token": token });
   });
 });
 
