@@ -2,7 +2,6 @@ const express = require('express');
 const {sendJSONRes, catcher } = require('./helpers');
 const User = require('../models/user');
 const SingleBet = require('../models/singleBet');
-const UserBets = require('../models/userBets');
 
 const router = express.Router();
 
@@ -32,7 +31,7 @@ router.post('/createSingle', async (req, res) => {
   const betId = betInfo._id;
 
   // save bet to userbets for both users
-  const addBetFunc = UserBets.addBet.bind(UserBets);
+  const addBetFunc = User.addBet.bind(User);
   const creatorUpdate = await catcher(res, 400, { "message": "update failed" },
     addBetFunc, creatorId, betId);
   if (!creatorUpdate) return;
@@ -45,7 +44,7 @@ router.post('/createSingle', async (req, res) => {
 });
 
 router.get('/allSingles', async (req, res) => {
-  const betIds = await catcher(res, 400, { "message": "could not find bet ids for user" }, UserBets.findById.bind(UserBets), req.body.user);
+  const betIds = await catcher(res, 400, { "message": "could not find bet ids for user" }, User.findById.bind(User), req.body.user, 'bets');
   if (!betIds) return;
 
   const bets = await catcher(res, 400, { "message": "could not find bets for user" },

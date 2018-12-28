@@ -25,6 +25,6 @@ router.get('/protected', auth, (req, res) => {
 });
 
 router.use('/users', userRoutes);
-router.use('/bets', betRoutes);
+router.use('/bets', auth, betRoutes);
 
 module.exports = router;

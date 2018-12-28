@@ -2,7 +2,6 @@ const express = require('express');
 const passport = require('passport');
 const { sendJSONRes, catcher } = require('./helpers');
 const User = require('../models/user');
-const UserBets = require('../models/userBets');
 
 const router = express.Router();
 
@@ -29,10 +28,6 @@ router.post('/signup', async (req, res) => {
 
   const userInfo = await catcher(res, 400, { "message": "could not create user" }, user.save.bind(user));
   if (!userInfo) return;
-
-  const userBets = new UserBets({ _id: userInfo._id });
-  const info = await catcher(res, 400, { "message": "could not create userBets" }, userBets.save.bind(userBets));
-  if (!info) return;
 
   const token = user.generateJwt();
   sendJSONRes(res, 200, { "token": token });

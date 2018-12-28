@@ -15,7 +15,8 @@ const UserSchema = new Schema({
     required: true
   },
   hash: String,
-  salt: String
+  salt: String,
+  bets: Array
 });
 
 UserSchema.methods = {
@@ -43,6 +44,9 @@ UserSchema.methods = {
 UserSchema.statics = {
   getId: function(username) {
     return this.findOne({ username: username }, '_id');
+  },
+  addBet: function(userId, betId) {
+    return this.findByIdAndUpdate(userId, { "$push": { "bets": betId } });
   }
 };
 
