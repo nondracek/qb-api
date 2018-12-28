@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const SingleBetSchema = new Schema({
-  createdBy: {
+const singleBetSchema = new Schema({
+  creator: {
     type: String,
     required: true,
   },
@@ -10,32 +10,58 @@ const SingleBetSchema = new Schema({
     type: String,
     required: true
   },
+  amount: {
+    type: Number,
+    required: true
+  },
+  creationTime: {
+    type: Date,
+    required: true
+  },
+  status: {
+    type: String,
+    required: true
+  },
   participants: {
     type: Array,
     required: true
   },
-  completed: {
-    type: Boolean,
+  accepted: {
+    type: Map,
+    of: Boolean,
     required: true
   },
-  amount: {
-    type: Number,
+  submissions: {
+    type: Map,
+    of: String,
     required: true
-  }
-  timeCreated: {
-    type: Date,
+  },
+  cancellations: {
+    type: Map,
+    of: Boolean,
     required: true
   }
 });
 
-SingleBetSchema.methods = {
-  participantAccept: function(participant) {
+singleBetSchema.methods = {
+  participantAccept: function(participantId) {
+    this.accepted.set(participantId, true);
+    this.status = "active";
   },
-  participantDecline: function(participant) {
+  participantCancel: function(participantId) {
+    this.cancellations.set(participantId, true);
   },
-  completeBet: function() {
+  participantSubmit: function(participantId, outcome) {
+    this.submissions.set(participantId, outcome);
   }
 };
 
-const SingleBet = mongoose.model('singleBets', SingleBetSchema);
+singleBetSchema.statics = {
+  decline: function(betId) {
+    this.deleteOne({ _id: betId }, err => {
+      if (err) console.log(err);
+    });
+  }
+};
 
+module.exports = mongoose.model('singleBets', singleBetSchema);

@@ -37,8 +37,13 @@ UserSchema.methods = {
       name: this.name,
       exp: parseInt(expiry.getTime() / 1000),
     }, "MY_SECRET"); // should not get secret in the code
+  },
+};
+
+UserSchema.statics = {
+  getId: function(username) {
+    return this.findOne({ username: username }, '_id');
   }
 };
 
-const User = mongoose.model('users', UserSchema);
-module.exports = User;
+module.exports = mongoose.model('users', UserSchema);

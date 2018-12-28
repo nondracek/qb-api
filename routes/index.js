@@ -2,6 +2,7 @@ const express = require('express');
 const cool = require('cool-ascii-faces');
 const jwt = require('express-jwt');
 const userRoutes = require('./users');
+const betRoutes = require('./bets');
 
 const router = express.Router();
 const auth = jwt({
@@ -24,5 +25,6 @@ router.get('/protected', auth, (req, res) => {
 });
 
 router.use('/users', userRoutes);
+router.use('/bets', betRoutes);
 
 module.exports = router;
