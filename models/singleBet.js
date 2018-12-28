@@ -43,25 +43,28 @@ const singleBetSchema = new Schema({
   }
 });
 
-singleBetSchema.methods = {
-  participantAccept: function(participantId) {
-    this.accepted.set(participantId, true);
-    this.status = "active";
-  },
-  participantCancel: function(participantId) {
-    this.cancellations.set(participantId, true);
-  },
-  participantSubmit: function(participantId, outcome) {
-    this.submissions.set(participantId, outcome);
-  }
-};
+//singleBetSchema.methods = {
+  //participantAccept: function(participantId) {
+    //this.accepted.set(participantId, true);
+    //this.status = "active";
+  //},
+  //participantCancel: function(participantId) {
+    //this.cancellations.set(participantId, true);
+  //},
+  //participantSubmit: function(participantId, outcome) {
+    //this.submissions.set(participantId, outcome);
+  //}
+//};
 
 singleBetSchema.statics = {
-  decline: function(betId) {
-    this.deleteOne({ _id: betId }, err => {
-      if (err) console.log(err);
-    });
+  getBets: function(betIds) {
+    return this.find({ '_id': { '$in': betIds } });
   }
+  //decline: function(betId) {
+    //this.deleteOne({ _id: betId }, err => {
+      //if (err) console.log(err);
+    //});
+  //}
 };
 
-module.exports = mongoose.model('singleBets', singleBetSchema);
+module.exports = mongoose.model('singlebets', singleBetSchema);

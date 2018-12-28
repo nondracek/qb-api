@@ -3,7 +3,7 @@ const sendJSONRes = (res, status, content) => {
   res.json(content);
 };
 
-const catcher = async (f, res, status, content, ...args) => {
+const catcher = async (res, status, content, f, ...args) => {
   let error;
   const result = await f(...args).catch(err => {
     error = err;

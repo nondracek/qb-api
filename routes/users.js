@@ -1,13 +1,10 @@
 const express = require('express');
 const passport = require('passport');
+const { sendJSONRes, catcher } = require('./helpers');
 const User = require('../models/user');
+const UserBets = require('../models/userBets');
 
 const router = express.Router();
-
-const sendJSONRes = (res, status, content) => {
-  res.status(status);
-  res.json(content);
-};
 
 router.post('/login', (req, res) => {
   passport.authenticate('local', (err, user, info) => {
@@ -24,21 +21,21 @@ router.post('/login', (req, res) => {
   })(req, res);
 });
 
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
   const user = new User();
   user.username = req.body.username;
   user.name = req.body.name;
   user.setPassword(req.body.password);
-  user.save(err => {
-    if (err) {
-      sendJSONRes(res, 400, {
-        "message": "could not create user"
-      });
-      return;
-    }
-    const token = user.generateJwt();
-    sendJSONRes(res, 200, { "token": token });
-  });
+
+  const userInfo = await catcher(res, 400, { "message": "could not create user" }, user.save.bind(user));
+  if (!userInfo) return;
+
+  const userBets = new UserBets({ _id: userInfo._id });
+  const info = await catcher(res, 400, { "message": "could not create userBets" }, userBets.save.bind(userBets));
+  if (!info) return;
+
+  const token = user.generateJwt();
+  sendJSONRes(res, 200, { "token": token });
 });
 
 router.post('/removeUser', (req, res) => {
