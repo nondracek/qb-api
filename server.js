@@ -7,7 +7,8 @@ const apiRoutes = require('./routes');
 // get passport strategy
 require('./passport');
 
-// should ideally use a config or dotenv file
+// get env vars
+require('dotenv').config();
 const DB_USER = process.env.DB_USER;
 const DB_PW = process.env.DB_PW;
 const DB_HOST = process.env.DB_HOST;
