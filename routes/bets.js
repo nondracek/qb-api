@@ -1,4 +1,5 @@
 const express = require('express');
+const apn = require('apn');
 const {sendJSONRes, catcher } = require('./helpers');
 const User = require('../models/user');
 const SingleBet = require('../models/singleBet');
@@ -10,7 +11,8 @@ router.post('/createSingle', async (req, res) => {
   const creatorId = req.body.creator;
   const participant = await catcher(res, 400, { "message": "invalid participant username" }, User.getId.bind(User), req.body.participant);
   if (!participant) return;
-  const participantId = participant._id
+  const participantId = participant._id;
+  const participantDeviceToken = participant.deviceToken;
 
   // make bet object using the two user ids
   const bet = new SingleBet({
@@ -39,6 +41,17 @@ router.post('/createSingle', async (req, res) => {
   const participantUpdate = await catcher(res, 400, { "message": "update failed" },
     addBetFunc, participantId, betId);
   if (!participantUpdate) return;
+
+  // finally, notify participant if they have signed up for notifications
+  if (participantDeviceToken) {
+    const { apnProvider, app } = require('../server');
+    const notification = new apn.Notification();
+    notification.topic = app;
+    notification.alert = "You have a new 1v1 bet request!";
+    notification.badge = 1;
+    notification.sound = 'ping.aiff';
+    apnProvider.send(notification, participantDeviceToken).then(result => console.log(result));
+  }
 
   sendJSONRes(res, 200, betInfo);
 });

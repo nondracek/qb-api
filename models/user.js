@@ -16,7 +16,8 @@ const UserSchema = new Schema({
   },
   hash: String,
   salt: String,
-  bets: Array
+  bets: Array,
+  deviceToken: String
 });
 
 UserSchema.methods = {

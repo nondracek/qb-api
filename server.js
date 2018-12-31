@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const apn = require('apn');
 const passport = require('passport');
+const apn = require('apn');
 const apiRoutes = require('./routes');
 
 // get passport strategy
@@ -68,6 +68,7 @@ function connect() {
 }
 
 const gracefulShutdown = (msg, callback) => {
+  apnProvider.shutdown();
   db.close(function() {
     console.log('Mongoose disconnected through ' + msg);
     callback();
@@ -94,3 +95,6 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
+const bundleId = process.env.BUNDLE_ID;
+module.exports = { apnProvider, bundleId };

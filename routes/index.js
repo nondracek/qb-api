@@ -1,6 +1,7 @@
 const express = require('express');
 const cool = require('cool-ascii-faces');
 const jwt = require('express-jwt');
+const apn = require('apn');
 const userRoutes = require('./users');
 const betRoutes = require('./bets');
 

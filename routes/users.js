@@ -24,6 +24,7 @@ router.post('/signup', async (req, res) => {
   const user = new User();
   user.username = req.body.username;
   user.name = req.body.name;
+  user.deviceToken = req.body.deviceToken;
   user.setPassword(req.body.password);
 
   const userInfo = await catcher(res, 400, { "message": "could not create user" }, user.save.bind(user));
