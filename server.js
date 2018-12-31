@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const apn = require('apn');
 const passport = require('passport');
 const apiRoutes = require('./routes');
 
@@ -18,6 +19,16 @@ const PORT = process.env.PORT || 3000;
 
 // Initialize http server
 const app = express();
+
+// connect to apn
+const apnProvider = new apn.Provider({
+  token: {
+    key: process.env.APNS_KEY,
+    keyId: process.env.KEY_ID,
+    teamId: process.env.TEAM_ID
+  },
+  production: false
+});
 
 // connect to mongodb
 const db = connect();
