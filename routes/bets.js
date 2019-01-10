@@ -57,7 +57,7 @@ router.post('/createSingle', async (req, res) => {
 });
 
 router.get('/allSingles', async (req, res) => {
-  const betIds = await catcher(res, 400, { "message": "could not find bet ids for user" }, User.findById.bind(User), req.body.user, 'bets');
+  const betIds = await catcher(res, 400, { "message": "could not find bet ids for user" }, User.findById.bind(User), req.header('userID'), 'bets');
   if (!betIds) return;
 
   const bets = await catcher(res, 400, { "message": "could not find bets for user" },
