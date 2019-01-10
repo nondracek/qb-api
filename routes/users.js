@@ -20,6 +20,18 @@ router.post('/login', (req, res) => {
   })(req, res);
 });
 
+router.post('/setNotifID', async (req, res) => {
+    console.log('we here');
+    query = {'username': req.body.username};
+    notifID = {'deviceToken': req.body.notifID};
+    User.findOneAndUpdate(query, notifID, {upsert:true}, function(err, doc){
+            if (err) return res.send(500, { error: err });
+            return res.send("succesfully updated Notification ID");
+    });
+    console.log('at end');
+});
+
+
 router.post('/signup', async (req, res) => {
   const user = new User();
   user.username = req.body.username;
