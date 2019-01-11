@@ -43,8 +43,8 @@ UserSchema.methods = {
 };
 
 UserSchema.statics = {
-  getId: function(username) {
-    return this.findOne({ username: username }, '_id');
+  getUser: function(username) {
+    return this.findOne({ username: username });
   },
   addBet: function(userId, betId) {
     return this.findByIdAndUpdate(userId, { "$push": { "bets": betId } });

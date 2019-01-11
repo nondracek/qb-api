@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/createSingle', async (req, res) => {
   // verify user for the participant username (and get their ID)
   const creatorId = req.body.creator;
-  const participant = await catcher(res, 400, { "message": "invalid participant username" }, User.getId.bind(User), req.body.participant);
+  const participant = await catcher(res, 400, { "message": "invalid participant username" }, User.getUser.bind(User), req.body.participant);
   if (!participant) return;
   const participantId = participant._id;
   const participantDeviceToken = participant.deviceToken;
@@ -44,9 +44,9 @@ router.post('/createSingle', async (req, res) => {
 
   // finally, notify participant if they have signed up for notifications
   if (participantDeviceToken) {
-    const { apnProvider, app } = require('../server');
+    const { apnProvider, bundleId } = require('../server');
     const notification = new apn.Notification();
-    notification.topic = app;
+    notification.topic = bundleId;
     notification.alert = "You have a new 1v1 bet request!";
     notification.badge = 1;
     notification.sound = 'ping.aiff';

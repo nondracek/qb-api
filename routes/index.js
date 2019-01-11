@@ -4,6 +4,7 @@ const jwt = require('express-jwt');
 const apn = require('apn');
 const userRoutes = require('./users');
 const betRoutes = require('./bets');
+const settingRoutes = require('./settings');
 
 const router = express.Router();
 const auth = jwt({
@@ -27,5 +28,6 @@ router.get('/protected', auth, (req, res) => {
 
 router.use('/users', userRoutes);
 router.use('/bets', auth, betRoutes);
+router.use('/settings', auth, settingRoutes);
 
 module.exports = router;
