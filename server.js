@@ -13,9 +13,9 @@ require('dotenv').config();
 const DB_USER = process.env.DB_USER;
 const DB_PW = process.env.DB_PW;
 const DB_HOST = process.env.DB_HOST;
-const DB_AUS_HOST = process.env.DB_AUS_HOST;
-//const DB_URL = `mongodb+srv://${DB_USER}:${DB_PW}@${DB_HOST}/vision?retryWrites=true`;
-const DB_URL = `mongodb://${DB_USER}:${DB_PW}@${DB_AUS_HOST}/vision?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true`;
+const DB_SRV_HOST = process.env.DB_SRV_HOST;
+//const DB_URL = `mongodb+srv://${DB_USER}:${DB_PW}@${DB_SRV_HOST}/vision?retryWrites=true`;
+const DB_URL = `mongodb://${DB_USER}:${DB_PW}@${DB_HOST}/vision?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true`;
 
 const PORT = process.env.PORT || 3000;
 

@@ -1,14 +1,53 @@
 const express = require('express');
-const apn = require('apn');
-const {sendJSONRes, catcher } = require('./helpers');
+const { sendJSONRes, catcher } = require('./helpers');
+const sendNotification = require('./notificationService');
 const User = require('../models/user');
 const SingleBet = require('../models/singleBet');
 
 const router = express.Router();
 
+router.post('/declineSingle', async (req, res) => {
+  // req should contain username, bet ID in req.body
+  const declinedUser = req.body.username;
+  const betId = req.body.bet;
+
+  const bet = await catcher(res, 400, { "message": "invalid bet ID" }, SingleBet.findByIdAndDelete.bind(SingleBet), betId);
+  if (!bet) return;
+
+  const creator = await catcher(res, 400, { "message": "invalid bet creator" }, User.findById.bind(User), bet.creator);
+  if (!creator) return;
+  if (creator.deviceToken) {
+    sendNotification(`Your bet has been declined by ${declinedUser}.`, 1, 'ping.aiff', creator.deviceToken);
+  }
+});
+
+router.post('/acceptSingle', async (req, res) => {
+  // req should contain user ID, username, and bet ID in req.body
+  const acceptedId = req.body.userId;
+  const acceptedUser = req.body.username;
+  const betId = req.body.bet;
+
+  // find the bet object and update the user who accepted to true, also change bet status to active
+  const bet = await catcher(res, 400, { "message": "invalid bet ID" }, SingleBet.findById.bind(SingleBet), betId);
+  if (!bet) return;
+  bet.participantAccept(acceptedId);
+
+  // send notification to other participant (if they signed up for notifications) to let them know that bet has been accepted
+  // other participant is always creator (creator never needs to accept single since they accept upon creation)
+  const creator = await catcher(res, 400, { "message": "invalid bet creator" }, User.findById.bind(User), bet.creator);
+  if (!creator) return;
+  if (creator.deviceToken) {
+    sendNotification(`Your bet has been accepted by ${acceptedUser}!`, 1, 'ping.aiff', creator.deviceToken);
+  }
+
+  sendJSONRes(res, 200, bet);
+});
+
 router.post('/createSingle', async (req, res) => {
+  const creatorId = req.body.creatorId;
+  const creatorName = req.body.creatorName;
+
   // verify user for the participant username (and get their ID)
-  const creatorId = req.body.creator;
   const participant = await catcher(res, 400, { "message": "invalid participant username" }, User.getUser.bind(User), req.body.participant);
   if (!participant) return;
   const participantId = participant._id;
@@ -44,13 +83,7 @@ router.post('/createSingle', async (req, res) => {
 
   // finally, notify participant if they have signed up for notifications
   if (participantDeviceToken) {
-    const { apnProvider, bundleId } = require('../server');
-    const notification = new apn.Notification();
-    notification.topic = bundleId;
-    notification.alert = "You have a new 1v1 bet request!";
-    notification.badge = 1;
-    notification.sound = 'ping.aiff';
-    apnProvider.send(notification, participantDeviceToken).then(result => console.log(result));
+    sendNotification(`You have a new 1v1 bet request from ${creatorName}!`, 1, 'ping.aiff', participantDeviceToken);
   }
 
   sendJSONRes(res, 200, betInfo);
