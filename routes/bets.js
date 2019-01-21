@@ -6,6 +6,56 @@ const SingleBet = require('../models/singleBet');
 
 const router = express.Router();
 
+router.post('/submitSingle', async (req, res) => {
+  // req should contain username, user ID, bet ID, and outcome in req.body
+  const submitId = req.body.userId;
+  const submitUser = req.body.username;
+  const betId = req.body.bet;
+  const outcome = req.body.outcome;
+
+  const bet = await catcher(res, 400, { "message": "invalid bet ID" }, SingleBet.findById.bind(SingleBet), betId);
+  if (!bet) return;
+  bet.participantSubmit(submitId, outcome);
+
+  const creator = await catcher(res, 400, { "message": "invalid bet creator" }, User.findById.bind(User), bet.creator);
+  if (!creator) return;
+
+  console.log(bet.checkSubmit());
+  sendJSONRes(res, 200, { "message": "this endpoint has not been completed" });
+});
+
+router.post('/cancelSingle', async (req, res) => {
+  // req should contain username, user ID, bet ID in req.body
+  const cancelId = req.body.userId;
+  const cancelUser = req.body.username;
+  const betId = req.body.bet;
+
+  const bet = await catcher(res, 400, { "message": "invalid bet ID" }, SingleBet.findById.bind(SingleBet), betId);
+  if (!bet) return;
+  bet.participantCancel(cancelId);
+
+  const creator = await catcher(res, 400, { "message": "invalid bet creator" }, User.findById.bind(User), bet.creator);
+  if (!creator) return;
+
+  let finalCancel = false;
+  if (bet.checkCancel()) {
+    SingleBet.findByIdAndDelete(betId);
+    finalCancel = true;
+  }
+
+  if (creator.deviceToken) {
+    let msg;
+    if (finalCancel) {
+      msg = `Your bet cancellation has been affirmed by ${cancelUser}.`;
+    } else {
+      msg = `${cancelUser} has requested to cancel your bet "${bet.title}".`;
+    }
+    sendNotification(msg, 1, 'ping.aiff', creator.deviceToken);
+  }
+
+  sendJSONRes(res, 200, bet);
+});
+
 router.post('/declineSingle', async (req, res) => {
   // req should contain username, bet ID in req.body
   const declinedUser = req.body.username;
@@ -19,6 +69,8 @@ router.post('/declineSingle', async (req, res) => {
   if (creator.deviceToken) {
     sendNotification(`Your bet has been declined by ${declinedUser}.`, 1, 'ping.aiff', creator.deviceToken);
   }
+
+  sendJSONRes(res, 200, bet);
 });
 
 router.post('/acceptSingle', async (req, res) => {

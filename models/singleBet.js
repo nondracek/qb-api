@@ -47,13 +47,28 @@ singleBetSchema.methods = {
   participantAccept: function(participantId) {
     this.accepted.set(participantId, true);
     this.status = "active";
+    this.save();
   },
-  //participantCancel: function(participantId) {
-    //this.cancellations.set(participantId, true);
-  //},
-  //participantSubmit: function(participantId, outcome) {
-    //this.submissions.set(participantId, outcome);
-  //}
+  participantCancel: function(participantId) {
+    this.cancellations.set(participantId, true);
+    this.save();
+  },
+  participantSubmit: function(participantId, outcome) {
+    this.submissions.set(participantId, outcome);
+    this.save();
+  },
+  checkCancel: function() {
+    const values = Array.from(this.cancellations.values());
+    return values[0] && values[0] === values[1];
+  },
+  checkSubmit: function() {
+    const outcomes = Array.from(this.submissions.values());
+    return outcomes[0] === outcomes[1];
+  },
+  complete: function() {
+    this.status = "complete";
+    this.save();
+  }
 };
 
 singleBetSchema.statics = {
