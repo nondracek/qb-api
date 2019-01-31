@@ -1,4 +1,5 @@
 const express = require('express');
+//const path = require('path');
 const cool = require('cool-ascii-faces');
 const jwt = require('express-jwt');
 const apn = require('apn');
@@ -14,6 +15,10 @@ const auth = jwt({
 
 router.get('/', (req, res) => {
   res.send(cool());
+});
+
+router.get('/confirmEmail', (req, res) => {
+  res.sendFile(path.join(__dirname + '/confirmEmail.html'));
 });
 
 router.get('/protected', auth, (req, res) => {
