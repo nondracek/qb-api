@@ -21,8 +21,8 @@ router.get('/confirmEmail', (req, res) => {
   res.sendFile(path.join(__dirname + '/confirmEmail.html'));
 });
 
-router.get('/passReset', (req, res) => {
-  res.sendFile(path.join(__dirname + '/passReset.html'));
+router.get('/resetPassword', (req, res) => {
+  res.sendFile(path.join(__dirname + '/resetPassword.html'));
 });
 
 router.get('/protected', auth, (req, res) => {
